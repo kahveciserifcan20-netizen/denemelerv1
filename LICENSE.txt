@@ -1,0 +1,35 @@
+═══════════════════════════════════════════════════════════════════════════════
+                           K-BOT v109 - LİSANS SÖZLEŞMESİ
+═══════════════════════════════════════════════════════════════════════════════
+
+Bu yazılım K-BOT Team tarafından geliştirilmiştir.
+
+1. KULLANIM HAKLARI
+   - Bu yazılım kişisel kullanım için ücretsizdir.
+   - Ticari kullanım için yazılım sahibinden izin alınmalıdır.
+   - Yazılımın kopyalanması ve dağıtılması yasaktır.
+
+2. KISITLAMALAR
+   - Yazılımın kaynak kodu değiştirilemez.
+   - Yazılım tersine mühendislik yapılamaz.
+   - Yazılımın parçaları ayrı kullanılamaz.
+
+3. SORUMLULUK REDDİ
+   - Bu yazılım "OLDUĞU GİBİ" sağlanır.
+   - Yazılımın kullanımından doğacak herhangi bir zarardan
+     geliştirici sorumlu tutulamaz.
+   - Yazılımın herhangi bir amaç için uygun olduğu garanti edilmez.
+
+4. OYUN KURALLARI
+   - Bu yazılımın kullanımı bazı oyunların kurallarını ihlal edebilir.
+   - Kullanıcı kendi sorumluluğunda kullanım kararı vermelidir.
+   - Olası hesap yasaklarından geliştirici sorumlu değildir.
+
+5. GÜNCELLEMELER
+   - Yazılım otomatik olarak güncellenebilir.
+   - Güncellemeler zorunlu olabilir.
+
+═══════════════════════════════════════════════════════════════════════════════
+                    Copyright (C) 2024 K-BOT Team
+                    Tüm hakları saklıdır.
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,35 @@
+[package]
+name = "the_absolute_monolith"
+version = "109.0.0"
+edition = "2021"
+
+[dependencies]
+# --- BİZİM YENİ RAM (IPC) VE YAPAY ZEKA SİSTEMİMİZ ---
+winapi = { version = "0.3.9", features = ["winuser", "wingdi", "memoryapi", "handleapi", "winbase", "minwindef", "windef", "ntdef"] }
+ort = "2.0.0-rc.12" 
+image = "0.24"
+imageproc = "0.23"
+rusttype = "0.9"
+tokio = { version = "1", features = ["full"] }
+crossbeam-channel = "0.5"
+eframe = "0.27"
+
+# --- SENİN PROJENİN DİĞER PARÇALARI ---
+device_query = "1.1"          
+rusty-tesseract = "1.1"       # Tesseract fallback
+ocrs = "0.12"                  # OCRS nöral ağ OCR (Image/PixelOrder dahil)
+rten = "0.24"                  # Model yükleyici (ocrs 0.12 ile uyumlu)
+levenshtein = "1.0"            # Fuzzy string matching (OCR hata toleransı)
+base64 = "0.21"                # Base64 encoding (API için)
+reqwest = { version = "0.11", features = ["json", "blocking"] }  # API desteği
+regex = "1.10"                
+serialport = "4.2"            
+serde = { version = "1.0", features = ["derive"] } 
+serde_json = "1.0"
+chrono = "0.4"
+rand = "0.8"
+rfd = "0.15"                 # Native dosya seçim dialogu
+rumqttc = "0.25.1"
+lazy_static = "1.4"
+interception = "0.1.2"
+rayon = "1.8"

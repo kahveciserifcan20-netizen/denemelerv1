@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-BOT Remote Controller</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            color: #e94560;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            color: #888;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 12px;
+        }
+
+        .status-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-label {
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .status-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .dot-connected {
+            background: #4ecca3;
+            box-shadow: 0 0 10px #4ecca3;
+        }
+
+        .dot-disconnected {
+            background: #e94560;
+        }
+
+        .dot-running {
+            background: #4ecca3;
+            animation: pulse 1s infinite;
+        }
+
+        .dot-stopped {
+            background: #ff6b6b;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #4ecca3 0%, #38b58b 100%);
+            color: #000;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(78, 204, 163, 0.4);
+        }
+
+        .btn-stop {
+            background: linear-gradient(135deg, #e94560 0%, #c73e54 100%);
+            color: #fff;
+        }
+
+        .btn-stop:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .config-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .config-title {
+            color: #e94560;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input,
+        select {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 14px;
+        }
+
+        input::placeholder {
+            color: #666;
+        }
+
+        .log-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .log-title {
+            color: #e94560;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .log-content {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #4ecca3;
+            line-height: 1.6;
+        }
+
+        .log-error {
+            color: #e94560;
+        }
+
+        .log-info {
+            color: #4ecca3;
+        }
+
+        .log-warn {
+            color: #ffd93d;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            color: #4ecca3;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎮 K-BOT REMOTE</h1>
+        <p class="subtitle">MQTT Uzaktan Kontrol Paneli</p>
+
+        <div class="status-box">
+            <div class="status-row">
+                <span class="status-label">Bağlantı:</span>
+                <span class="status-value">
+                    <span id="connDot" class="status-dot dot-disconnected"></span>
+                    <span id="connStatus">Bağlanıyor...</span>
+                </span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">Bot Durumu:</span>
+                <span class="status-value">
+                    <span id="botDot" class="status-dot dot-stopped"></span>
+                    <span id="botStatus">Bilinmiyor</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="config-box">
+            <div class="config-title">⚙️ Ayarlar</div>
+            <div class="config-row">
+                <input type="text" id="hwnd" placeholder="HWND (örn: 123456)">
+            </div>
+            <div class="config-row">
+                <select id="model">
+                    <option value="vadi.onnx">Vadi Model</option>
+                    <option value="buyulu.onnx">Büyülü Model</option>
+                </select>
+                <select id="driver">
+                    <option value="WinAPI">WinAPI</option>
+                    <option value="Arduino_AUTO">Arduino</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-start" id="btnStart" onclick="sendStart()">▶ Başlat</button>
+            <button class="btn btn-stop" id="btnStop" onclick="sendStop()">⏹ Durdur</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="stonesMined">0</div>
+                <div class="stat-label">Kırılan Taş</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="uptime">00:00</div>
+                <div class="stat-label">Çalışma Süresi</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="captchaSolved">0</div>
+                <div class="stat-label">Captcha Çözüldü</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="missed">0</div>
+                <div class="stat-label">Iskalanan</div>
+            </div>
+        </div>
+
+        <div class="log-box">
+            <div class="log-title">📋 Log</div>
+            <div class="log-content" id="logContent">
+                [Sistem] Başlatılıyor...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MQTT Ayarları
+        const MQTT_BROKER = 'wss://broker.hivemq.com:8884/mqtt'; // WebSocket SSL
+        const TOPIC_CMD = 'kbot/cmd';
+        const TOPIC_STATUS = 'kbot/status';
+
+        let client = null;
+        let stats = {
+            stonesMined: 0,
+            stonesMissed: 0,
+            captchaSolved: 0,
+            uptimeSecs: 0,
+            isRunning: false
+        };
+
+        function log(msg, type = 'info') {
+            const logEl = document.getElementById('logContent');
+            const time = new Date().toLocaleTimeString('tr-TR');
+            const cls = type === 'error' ? 'log-error' : type === 'warn' ? 'log-warn' : 'log-info';
+            logEl.innerHTML += `<div class="${cls}">[${time}] ${msg}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connDot');
+            const status = document.getElementById('connStatus');
+            if (connected) {
+                dot.className = 'status-dot dot-connected';
+                status.textContent = 'Bağlı';
+                log('MQTT bağlantısı kuruldu', 'info');
+            } else {
+                dot.className = 'status-dot dot-disconnected';
+                status.textContent = 'Bağlantı Yok';
+                log('MQTT bağlantısı koptu', 'error');
+            }
+        }
+
+        function updateBotStatus(running) {
+            const dot = document.getElementById('botDot');
+            const status = document.getElementById('botStatus');
+            if (running) {
+                dot.className = 'status-dot dot-running';
+                status.textContent = 'Çalışıyor';
+            } else {
+                dot.className = 'status-dot dot-stopped';
+                status.textContent = 'Durduruldu';
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stonesMined').textContent = stats.stonesMined;
+            document.getElementById('missed').textContent = stats.stonesMissed;
+            document.getElementById('captchaSolved').textContent = stats.captchaSolved;
+
+            const h = Math.floor(stats.uptimeSecs / 3600);
+            const m = Math.floor((stats.uptimeSecs % 3600) / 60);
+            document.getElementById('uptime').textContent =
+                `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+
+        function sendStart() {
+            const hwnd = document.getElementById('hwnd').value;
+            const model = document.getElementById('model').value;
+            const driver = document.getElementById('driver').value;
+
+            if (!hwnd) {
+                log('HWND giriniz!', 'error');
+                return;
+            }
+
+            const cmd = {
+                action: 'start',
+                hwnd: parseInt(hwnd),
+                model: model,
+                driver: driver
+            };
+
+            client.publish(TOPIC_CMD, JSON.stringify(cmd));
+            log(`START gönderildi: HWND=${hwnd}, Model=${model}`, 'info');
+        }
+
+        function sendStop() {
+            const cmd = { action: 'stop' };
+            client.publish(TOPIC_CMD, JSON.stringify(cmd));
+            log('STOP komutu gönderildi', 'warn');
+        }
+
+        // MQTT Bağlantısı
+        function connectMQTT() {
+            log('MQTT broker\'a bağlanıyor...', 'info');
+
+            const clientId = 'kbot_remote_' + Math.random().toString(16).substr(2, 8);
+
+            try {
+                client = mqtt.connect(MQTT_BROKER, {
+                    clientId: clientId,
+                    clean: true,
+                    connectTimeout: 5000,
+                    reconnectPeriod: 3000
+                });
+
+                client.on('connect', () => {
+                    updateConnectionStatus(true);
+                    client.subscribe(TOPIC_STATUS, (err) => {
+                        if (err) {
+                            log('Status topic abone hatası: ' + err, 'error');
+                        } else {
+                            log('Status topic\'e abone olundu', 'info');
+                        }
+                    });
+                });
+
+                client.on('message', (topic, message) => {
+                    if (topic === TOPIC_STATUS) {
+                        try {
+                            const data = JSON.parse(message.toString());
+                            stats = data;
+                            updateStats();
+                            updateBotStatus(data.isRunning);
+                        } catch (e) {
+                            // JSON parse hatası
+                        }
+                    }
+                });
+
+                client.on('error', (err) => {
+                    log('MQTT hata: ' + err, 'error');
+                    updateConnectionStatus(false);
+                });
+
+                client.on('close', () => {
+                    updateConnectionStatus(false);
+                });
+
+                client.on('reconnect', () => {
+                    log('Yeniden bağlanıyor...', 'warn');
+                });
+
+            } catch (e) {
+                log('Bağlantı hatası: ' + e, 'error');
+            }
+        }
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(connectMQTT, 500);
+        });
+    </script>
+</body>
+
+</html>
